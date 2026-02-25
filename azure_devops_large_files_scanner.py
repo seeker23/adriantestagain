@@ -1,55 +1,45 @@
 import requests
-import openpyxl
+import pandas as pd
+from openpyxl import Workbook
 from openpyxl.styles import PatternFill
 
-# Constants
-AZURE_DEVOPS_URL = 'https://dev.azure.com/{organization}/_apis/'
-PERSONAL_ACCESS_TOKEN = 'your_personal_access_token'
-HEADERS = {'Content-Type': 'application/json', 'Authorization': f'Bearer {PERSONAL_ACCESS_TOKEN}'}
+class AzureDevOpsOrgScanner:
+    def __init__(self, organization, token):
+        self.organization = organization
+        self.token = token
+        self.headers = {'Authorization': f'Bearer {self.token}'}
+        self.large_files = []
+        self.repo_stats = {}
+        self.project_stats = {}
 
-# Function to scan repositories in a project
+    def scan_repositories(self):
+        # Logic to scan Azure DevOps repositories for large files
+        # This will involve API calls to Azure DevOps to fetch repositories
+        # and then check file sizes.
+        pass
 
-def scan_repositories(org, project):
-    repo_url = f'{AZURE_DEVOPS_URL}{org}/{project}/_apis/git/repositories?api-version=6.0'
-    repos = requests.get(repo_url, headers=HEADERS).json()
-    large_files = []
-    for repo in repos['value']:
-        print(f'Scanning repository: {repo['name']}')
-        large_files += scan_repository(org, project, repo['name'])
-    return large_files
+    def print_summary(self):
+        # Logic to output summary of findings
+        print(f'Total Repositories Scanned: {len(self.repo_stats)}')
+        # More summary details would be processed here
 
-# Function to scan a single repository
+    def create_excel_export(self):
+        wb = Workbook()
+        sheets = ['Summary', 'Large Files', 'Repository Stats', 'Project Stats', 'By Extension']
+        for sheet_name in sheets:
+            wb.create_sheet(sheet_name)
+        # Logic to populate sheets with formatted data
+        # Apply color coding based on file sizes
+        # Save the workbook
+        wb.save('LargeFilesReport.xlsx')
 
-def scan_repository(org, project, repo_name):
-    repo_url = f'{AZURE_DEVOPS_URL}{org}/{project}/_apis/git/repositories/{repo_name}/refs?api-version=6.0'
-    # logic to scan files in the repo
-    # add checks for file size, etc.
-    return []  # Replace with actual logic to collect large files
+def main():
+    organization = "YOUR_ORG_NAME"
+    token = "YOUR_BEARER_TOKEN"
+    scanner = AzureDevOpsOrgScanner(organization, token)
+    scanner.scan_repositories()
+    scanner.print_summary()
+    scanner.create_excel_export()
 
-# Function to export to Excel
-
-def export_to_excel(data, output_file):
-    workbook = openpyxl.Workbook()
-    summary_sheet = workbook.active
-    summary_sheet.title = 'Summary'
-    # Write summary data
-    # Add other sheets: Large Files, Repository Stats, Project Stats, By Extension
-    large_files_sheet = workbook.create_sheet(title='Large Files')
-    # Add file entries in the sheet with formatting
-    # Color code based on file size
-
-    workbook.save(output_file)
-
-# Entry point
-if __name__ == '__main__':
-    organization = 'your_organization'
-    output_file_name = 'large_files_report.xlsx'
-    large_files_data = []
-    # Scan all projects
-    projects_url = f'{AZURE_DEVOPS_URL}{organization}/_apis/projects?api-version=6.0'
-    projects = requests.get(projects_url, headers=HEADERS).json()
-    for project in projects['value']:
-        large_files_data += scan_repositories(organization, project['name'])
-    export_to_excel(large_files_data, output_file_name)
-
-    print('Scanning completed and data exported to:', output_file_name)
+if __name__ == "__main__":
+    main()
